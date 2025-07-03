@@ -60,7 +60,7 @@ const AdminPanel = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   //const [lessons, setLessons] = useState<Lesson[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  //const [loading, setLoading] = useState(false);
+  const [ setLoading] = useState(false);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
