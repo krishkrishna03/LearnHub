@@ -26,7 +26,7 @@ interface Course {
   tags: string[];
   isPublished: boolean;
   isFeatured: boolean;
-  lessons: any[];
+  lessons: Lesson[]; // 🔧 Use Lesson[] instead of any[]
 }
 
 interface Lesson {
