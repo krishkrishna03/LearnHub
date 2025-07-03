@@ -26,7 +26,7 @@ interface Course {
   tags: string[];
   isPublished: boolean;
   isFeatured: boolean;
-  lessons: Lesson[]; // 🔧 Use Lesson[] instead of any[]
+  lessons: any[];
 }
 
 interface Lesson {
@@ -58,9 +58,9 @@ const AdminPanel = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('courses');
   const [courses, setCourses] = useState<Course[]>([]);
-  //const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [ setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
