@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Award, Download, Check } from 'lucide-react';
+import { Award, Download } from 'lucide-react';
 import axios from 'axios';
 
 interface CertificateGeneratorProps {
