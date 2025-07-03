@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Award, Download, Check } from 'lucide-react';
 import axios from 'axios';
 
