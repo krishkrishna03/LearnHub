@@ -11,8 +11,6 @@ import {
   Award,
   Globe,
   Smartphone,
-  Download,
-  ArrowRight,
   CreditCard
 } from 'lucide-react';
 import { useCourse } from '../hooks/useCourses';
