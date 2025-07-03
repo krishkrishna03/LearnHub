@@ -18,7 +18,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
   onDownload
 }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [certificateId, setCertificateId] = useState<string>('');
+  const [ setCertificateId] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleDownloadRequest = () => {
