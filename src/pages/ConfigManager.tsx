@@ -195,7 +195,7 @@ const ConfigManager = () => {
                       value={config.apiUrl}
                       onChange={(e) => setConfig({ ...config, apiUrl: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://your-backend.render.com/api"
+                      placeholder="https://learnhub-869c.onrender.com/api"
                     />
                     <p className="text-sm text-gray-500 mt-1">
                       Your backend API URL (e.g., deployed on Render)
@@ -211,7 +211,7 @@ const ConfigManager = () => {
                       value={config.frontendUrl}
                       onChange={(e) => setConfig({ ...config, frontendUrl: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://your-frontend.vercel.app"
+                      placeholder="https://learnhubk.netlify.app/"
                     />
                     <p className="text-sm text-gray-500 mt-1">
                       Your frontend URL (for CORS and redirects)
