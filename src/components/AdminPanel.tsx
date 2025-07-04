@@ -59,7 +59,7 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('courses');
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [loading, setLoading] = useState(false);
+
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
@@ -117,14 +117,12 @@ const AdminPanel = () => {
 
   const fetchCourses = async () => {
     try {
-      setLoading(true);
+      
       const response = await axios.get('/courses');
       setCourses(response.data.courses);
     } catch (error) {
       console.error('Error fetching courses:', error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const fetchQuizzes = async () => {
