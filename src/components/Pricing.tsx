@@ -1,4 +1,3 @@
-import React from 'react';
 import { Check, Star, Crown, Zap } from 'lucide-react';
 
 const Pricing = () => {
