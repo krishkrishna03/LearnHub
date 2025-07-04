@@ -1,12 +1,11 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Clock, Users, Star, ArrowRight } from 'lucide-react';
 import { useFeaturedCourses } from '../hooks/useCourses';
-import { useAuth } from '../context/AuthContext';
+//import { useAuth } from '../context/AuthContext';
 
 const Courses = () => {
   const { courses, loading, error } = useFeaturedCourses();
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   const getLevelColor = (level: string) => {
     switch (level) {
