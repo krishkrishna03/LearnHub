@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Plus, 
   Edit, 
   Trash2, 
   BookOpen, 
-  Users, 
-  BarChart3,
-  Save,
   X,
-  Upload,
+
   HelpCircle,
   Video,
   Image,
-  FileText
+
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
