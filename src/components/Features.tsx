@@ -1,7 +1,4 @@
-import React from 'react';
 import { 
-  BookOpen, 
-  Play, 
   Users, 
   Award, 
   Target, 
