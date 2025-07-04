@@ -19,8 +19,8 @@ export interface YoutubeResource {
 
 // Default configuration
 const defaultConfig: AppConfig = {
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  frontendUrl: import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173',
+  apiUrl: import.meta.env.VITE_API_URL || 'https://learnhub-869c.onrender.com/api',
+  frontendUrl: import.meta.env.VITE_FRONTEND_URL || 'https://learnhubk.netlify.app/',
   youtubeResources: []
 };
 
