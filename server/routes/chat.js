@@ -59,8 +59,13 @@ router.get('/messages', protect, async (req, res) => {
         ]
       };
     } else if (req.user.role === 'admin') {
-      // Admin can see all messages
-      query = {};
+      // Admin can see messages where they are sender or recipient
+      query = {
+        $or: [
+          { sender: req.user.id },
+          { recipient: req.user.id }
+        ]
+      };
     } else {
       // Regular users see their messages
       query = {
@@ -75,7 +80,7 @@ router.get('/messages', protect, async (req, res) => {
       .populate('sender', 'firstName lastName')
       .populate('recipient', 'firstName lastName')
       .sort({ timestamp: -1 })
-      .limit(100);
+      .limit(200);
 
     // Add senderName for easier display
     const messagesWithNames = messages.map(msg => ({
