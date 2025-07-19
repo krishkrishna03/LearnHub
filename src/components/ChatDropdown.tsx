@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
@@ -58,11 +58,16 @@ const ChatDropdown = () => {
     try {
       const response = await axios.get('/users');
       const allUsers = response.data.users || [];
-      // Filter out current user and show admins for regular users, students for admins
+      // Filter out current user
       const filteredUsers = allUsers.filter((u: User) => {
         if (u._id === user?.id) return false;
-        if (user?.role === 'admin') return u.role !== 'admin';
-        return u.role === 'admin';
+        if (user?.role === 'admin') {
+          // Admin sees all non-admin users
+          return u.role !== 'admin';
+        } else {
+          // Regular users see only admins
+          return u.role === 'admin';
+        }
       });
       setUsers(filteredUsers);
     } catch (error) {
@@ -91,6 +96,7 @@ const ChatDropdown = () => {
       fetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again.');
     }
   };
 
@@ -98,7 +104,16 @@ const ChatDropdown = () => {
     return messages.filter(msg => 
       (msg.sender._id === userId && msg.recipient._id === user?.id) ||
       (msg.sender._id === user?.id && msg.recipient._id === userId)
-    ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).slice(-20);
+  };
+
+  const markMessagesAsRead = async (senderId: string) => {
+    try {
+      await axios.put('/chat/mark-read', { senderId });
+      fetchUnreadCount();
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
   };
 
   return (
@@ -119,7 +134,9 @@ const ChatDropdown = () => {
         <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Messages</h3>
+              <h3 className="font-semibold text-gray-900">
+                {user?.role === 'admin' ? 'Student Messages' : 'Contact Support'}
+              </h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -132,18 +149,33 @@ const ChatDropdown = () => {
           <div className="flex h-96">
             {/* Users List */}
             <div className="w-1/3 border-r border-gray-200 overflow-y-auto">
+              {users.length === 0 && (
+                <div className="p-3 text-center text-gray-500 text-sm">
+                  {user?.role === 'admin' ? 'No students registered' : 'No support available'}
+                </div>
+              )}
               {users.map((chatUser) => (
                 <button
                   key={chatUser._id}
-                  onClick={() => setSelectedUser(chatUser)}
+                  onClick={() => {
+                    setSelectedUser(chatUser);
+                    markMessagesAsRead(chatUser._id);
+                  }}
                   className={`w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 ${
                     selectedUser?._id === chatUser._id ? 'bg-blue-50' : ''
                   }`}
                 >
-                  <div className="font-medium text-sm text-gray-900">
-                    {chatUser.firstName} {chatUser.lastName}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                      {chatUser.firstName[0]}{chatUser.lastName[0]}
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm text-gray-900">
+                        {chatUser.firstName} {chatUser.lastName}
+                      </div>
+                      <div className="text-xs text-gray-500 capitalize">{chatUser.role}</div>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">{chatUser.role}</div>
                 </button>
               ))}
             </div>
@@ -155,11 +187,17 @@ const ChatDropdown = () => {
                   <div className="p-3 border-b border-gray-200 bg-gray-50">
                     <div className="font-medium text-sm">
                       {selectedUser.firstName} {selectedUser.lastName}
+                      <span className="text-xs text-gray-500 ml-2 capitalize">({selectedUser.role})</span>
                     </div>
                   </div>
 
                   <div className="flex-1 p-3 overflow-y-auto space-y-2">
-                    {getConversationMessages(selectedUser._id).map((msg) => (
+                    {getConversationMessages(selectedUser._id).length === 0 ? (
+                      <div className="text-center text-gray-500 text-sm py-8">
+                        No messages yet. Start a conversation!
+                      </div>
+                    ) : (
+                      getConversationMessages(selectedUser._id).map((msg) => (
                       <div
                         key={msg._id}
                         className={`flex ${msg.sender._id === user?.id ? 'justify-end' : 'justify-start'}`}
@@ -171,10 +209,16 @@ const ChatDropdown = () => {
                               : 'bg-gray-100 text-gray-900'
                           }`}
                         >
-                          {msg.message}
+                          <div>{msg.message}</div>
+                          <div className={`text-xs mt-1 ${
+                            msg.sender._id === user?.id ? 'text-blue-200' : 'text-gray-500'
+                          }`}>
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
                       </div>
-                    ))}
+                      ))
+                    )}
                   </div>
 
                   <div className="p-3 border-t border-gray-200">
@@ -199,7 +243,15 @@ const ChatDropdown = () => {
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-                  Select a user to start chatting
+                  <div className="text-center">
+                    <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                    <div>
+                      {user?.role === 'admin' 
+                        ? 'Select a student to start chatting' 
+                        : 'Select support to start chatting'
+                      }
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
