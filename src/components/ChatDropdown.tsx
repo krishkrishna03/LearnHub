@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, X, Send, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import axios from '../axiosInstance'; // Use your new axios instance
+import axiosInstance from '../config/axiosInstance';
 
 interface ChatMessage {
   _id: string;
@@ -39,39 +39,36 @@ const ChatDropdown = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await axios.get('/chat/messages');
+      const response = await axiosInstance.get('/chat/messages');
       setMessages(response.data.messages || []);
     } catch (error) {
-      console.error('Error fetching messages:', error.response || error);
+      console.error('Error fetching messages:', error);
     }
   };
 
   const fetchUsers = async () => {
-    if (!user?.role) return;
-
     try {
-      const response = await axios.get('/users');
+      const response = await axiosInstance.get('/users');
       const allUsers = response.data.users || [];
 
-      // Filter out current user
-      const filteredUsers = allUsers.filter((u: UserType) => {
-        if (u._id === user.id) return false;
-        if (user.role === 'admin') return u.role !== 'admin';
-        return u.role === 'admin';
+      // Filter users based on role
+      const filtered = allUsers.filter((u: UserType) => {
+        if (u._id === user?.id) return false;
+        return user?.role === 'admin' ? u.role !== 'admin' : u.role === 'admin';
       });
 
-      setUsers(filteredUsers);
+      setUsers(filtered);
     } catch (error) {
-      console.error('Error fetching users:', error.response || error);
+      console.error('Error fetching users:', error);
     }
   };
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get('/chat/unread-count');
+      const response = await axiosInstance.get('/chat/unread-count');
       setUnreadCount(response.data.count || 0);
     } catch (error) {
-      console.error('Error fetching unread count:', error.response || error);
+      console.error('Error fetching unread count:', error);
     }
   };
 
@@ -79,31 +76,31 @@ const ChatDropdown = () => {
     if (!selectedUser || !newMessage.trim()) return;
 
     try {
-      await axios.post('/chat/send', {
+      await axiosInstance.post('/chat/send', {
         recipient: selectedUser._id,
         message: newMessage
       });
       setNewMessage('');
       fetchMessages();
     } catch (error) {
-      console.error('Error sending message:', error.response || error);
+      console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
     }
   };
 
   const getConversationMessages = (userId: string) => {
     return messages.filter(msg =>
-      (msg.sender._id === userId && msg.recipient._id === user.id) ||
-      (msg.sender._id === user.id && msg.recipient._id === userId)
+      (msg.sender._id === userId && msg.recipient._id === user?.id) ||
+      (msg.sender._id === user?.id && msg.recipient._id === userId)
     ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).slice(-20);
   };
 
   const markMessagesAsRead = async (senderId: string) => {
     try {
-      await axios.put('/chat/mark-read', { senderId });
+      await axiosInstance.put('/chat/mark-read', { senderId });
       fetchUnreadCount();
     } catch (error) {
-      console.error('Error marking messages as read:', error.response || error);
+      console.error('Error marking messages as read:', error);
     }
   };
 
@@ -187,18 +184,18 @@ const ChatDropdown = () => {
                       getConversationMessages(selectedUser._id).map(msg => (
                         <div
                           key={msg._id}
-                          className={`flex ${msg.sender._id === user.id ? 'justify-end' : 'justify-start'}`}
+                          className={`flex ${msg.sender._id === user?.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
                             className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                              msg.sender._id === user.id
+                              msg.sender._id === user?.id
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-100 text-gray-900'
                             }`}
                           >
                             <div>{msg.message}</div>
                             <div className={`text-xs mt-1 ${
-                              msg.sender._id === user.id ? 'text-blue-200' : 'text-gray-500'
+                              msg.sender._id === user?.id ? 'text-blue-200' : 'text-gray-500'
                             }`}>
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
