@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, X, Send, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import axiosInstance from '../config/axiosInstance';
+import axiosInstance from '../axiosInstance';
 
 interface ChatMessage {
   _id: string;
