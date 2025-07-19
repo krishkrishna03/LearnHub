@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, BookOpen, Search, LogOut, BarChart3, Settings } from 'lucide-react';
+import { Menu, X, BookOpen, Search, LogOut, BarChart3, Settings, MessageCircle, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
+import ChatDropdown from './ChatDropdown';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,6 +76,8 @@ const Header = () => {
             
             {user ? (
               <div className="flex items-center space-x-4">
+                <NotificationDropdown />
+                <ChatDropdown />
                 <Link
                   to="/dashboard"
                   className={`p-2 transition-colors duration-200 ${
