@@ -3,8 +3,17 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/database.js';
 
-// Load environment variables
+// Load environment variables first
 dotenv.config();
+
+// Validate required environment variables
+const requiredEnvVars = ['JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
+  console.log('💡 Please check your .env file and ensure all required variables are set');
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -44,7 +53,7 @@ const requireDB = (req, res, next) => {
   next();
 };
 
-// Routes
+// Basic health check route (no DB required)
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true,
@@ -63,6 +72,8 @@ import lessonRoutes from './routes/lessons.js';
 import quizRoutes from './routes/quizzes.js';
 import enrollmentRoutes from './routes/enrollments.js';
 import certificateRoutes from './routes/certificates.js';
+import chatRoutes from './routes/chat.js';
+import notificationRoutes from './routes/notifications.js';
 
 // Apply database requirement middleware to API routes that need DB
 app.use('/api/auth', requireDB, authRoutes);
@@ -72,10 +83,22 @@ app.use('/api/lessons', requireDB, lessonRoutes);
 app.use('/api/quizzes', requireDB, quizRoutes);
 app.use('/api/enrollments', requireDB, enrollmentRoutes);
 app.use('/api/certificates', requireDB, certificateRoutes);
+app.use('/api/chat', requireDB, chatRoutes);
+app.use('/api/notifications', requireDB, notificationRoutes);
 
 // Error handling middleware
 import { errorHandler } from './middleware/errorHandler.js';
 app.use(errorHandler);
+
+// Global error handler for unhandled errors
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 LearnHub Server running on port ${PORT}`);
@@ -92,5 +115,6 @@ app.listen(PORT, () => {
     console.log('\n📚 Start adding courses and content through the admin panel!');
   } else {
     console.log('\n⚠️  Database not connected. Please check your MongoDB Atlas configuration.');
+    console.log('💡 The server is running but API endpoints requiring database will return 503 errors.');
   }
 });
