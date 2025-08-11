@@ -6,15 +6,25 @@ const router = express.Router();
 
 // @desc    Get all users
 // @route   GET /api/users
-// @access  Private (Admin)
-router.get('/', protect, authorize('admin'), async (req, res) => {
+// @access  Private
+router.get('/', protect, async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    let users;
+    
+    if (req.user.role === 'admin') {
+      // Admin sees all users except other admins
+      users = await User.find({ role: { $ne: 'admin' } }).select('-password');
+    } else {
+      // Regular users see only admins for chat purposes
+      users = await User.find({ role: 'admin' }).select('-password');
+    }
+    
     res.json({
       success: true,
       users
     });
   } catch (error) {
+    console.error('Error fetching users:', error);
     res.status(500).json({ message: error.message });
   }
 });
