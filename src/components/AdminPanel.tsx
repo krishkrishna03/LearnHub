@@ -100,9 +100,11 @@ const AdminPanel = () => {
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showAddLesson, setShowAddLesson] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedCourseForLesson, setSelectedCourseForLesson] = useState<any>(null);
   const [newMessage, setNewMessage] = useState('');
   
   const [courseForm, setCourseForm] = useState({
@@ -129,6 +131,16 @@ const AdminPanel = () => {
     order: 1,
     isPreview: false,
     resources: [] as Resource[]
+  });
+
+  const [newLesson, setNewLesson] = useState({
+    title: '',
+    description: '',
+    videoUrl: '',
+    duration: '',
+    order: 1,
+    isPreview: false,
+    resources: [{ title: '', url: '', type: 'link' }]
   });
 
   const [notificationForm, setNotificationForm] = useState({
@@ -211,6 +223,59 @@ const AdminPanel = () => {
       console.error('Error saving lesson:', error);
       alert('Failed to save lesson');
     }
+  };
+
+  const handleAddLesson = async () => {
+    if (!selectedCourseForLesson || !newLesson.title || !newLesson.videoUrl) {
+      alert('Please fill in required fields');
+      return;
+    }
+
+    try {
+      await axios.post('/lessons', {
+        ...newLesson,
+        courseId: selectedCourseForLesson._id,
+        resources: newLesson.resources.filter(r => r.title && r.url)
+      });
+      
+      setNewLesson({
+        title: '',
+        description: '',
+        videoUrl: '',
+        duration: '',
+        order: 1,
+        isPreview: false,
+        resources: [{ title: '', url: '', type: 'link' }]
+      });
+      setShowAddLesson(false);
+      setSelectedCourseForLesson(null);
+      fetchCourses();
+      alert('Lesson added successfully!');
+    } catch (error: any) {
+      console.error('Error adding lesson:', error);
+      alert(error.response?.data?.message || 'Failed to add lesson');
+    }
+  };
+
+  const addLessonResource = () => {
+    setNewLesson({
+      ...newLesson,
+      resources: [...newLesson.resources, { title: '', url: '', type: 'link' }]
+    });
+  };
+
+  const removeLessonResource = (index: number) => {
+    setNewLesson({
+      ...newLesson,
+      resources: newLesson.resources.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateLessonResource = (index: number, field: string, value: string) => {
+    const updatedResources = newLesson.resources.map((resource, i) => 
+      i === index ? { ...resource, [field]: value } : resource
+    );
+    setNewLesson({ ...newLesson, resources: updatedResources });
   };
 
   const handleSendMessage = async () => {
@@ -429,6 +494,15 @@ const AdminPanel = () => {
                           className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                         >
                           Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedCourseForLesson(course);
+                            setShowAddLesson(true);
+                          }}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm mr-2"
+                        >
+                          Add Lesson
                         </button>
                         <button
                           onClick={() => {
@@ -903,6 +977,19 @@ const AdminPanel = () => {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Course Trailer/Preview Video URL
+                    </label>
+                    <input
+                      type="url"
+                      value={courseForm.previewVideo || ''}
+                      onChange={(e) => setCourseForm({ ...courseForm, previewVideo: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://youtube.com/watch?v=... or direct video URL"
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
                     <input
                       type="text"
@@ -1202,6 +1289,186 @@ const AdminPanel = () => {
                     {editingLesson ? 'Update Lesson' : 'Add Lesson'}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Lesson Modal */}
+        {showAddLesson && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Add Lesson to: {selectedCourseForLesson?.title}
+              </h2>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Lesson Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={newLesson.title}
+                      onChange={(e) => setNewLesson({ ...newLesson, title: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., Introduction to React - Part 1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Lesson Order
+                    </label>
+                    <input
+                      type="number"
+                      value={newLesson.order}
+                      onChange={(e) => setNewLesson({ ...newLesson, order: parseInt(e.target.value) })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      min="1"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Video URL * (YouTube, Vimeo, or Direct Video Link)
+                  </label>
+                  <input
+                    type="url"
+                    value={newLesson.videoUrl}
+                    onChange={(e) => setNewLesson({ ...newLesson, videoUrl: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={newLesson.description}
+                    onChange={(e) => setNewLesson({ ...newLesson, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="What will students learn in this lesson?"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Duration (e.g., 15:30)
+                  </label>
+                  <input
+                    type="text"
+                    value={newLesson.duration}
+                    onChange={(e) => setNewLesson({ ...newLesson, duration: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="15:30"
+                  />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isPreview"
+                    checked={newLesson.isPreview}
+                    onChange={(e) => setNewLesson({ ...newLesson, isPreview: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isPreview" className="ml-2 block text-sm text-gray-700">
+                    Free Preview (students can watch without enrolling)
+                  </label>
+                </div>
+
+                {/* Lesson Resources */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Lesson Resources (PDFs, Links, Code, etc.)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addLessonResource}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Add Resource
+                    </button>
+                  </div>
+                  
+                  {newLesson.resources.map((resource, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 mb-2">
+                      <div className="col-span-4">
+                        <input
+                          type="text"
+                          value={resource.title}
+                          onChange={(e) => updateLessonResource(index, 'title', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          placeholder="Resource title"
+                        />
+                      </div>
+                      <div className="col-span-5">
+                        <input
+                          type="url"
+                          value={resource.url}
+                          onChange={(e) => updateLessonResource(index, 'url', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          placeholder="Resource URL"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <select
+                          value={resource.type}
+                          onChange={(e) => updateLessonResource(index, 'type', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        >
+                          <option value="link">Link</option>
+                          <option value="pdf">PDF</option>
+                          <option value="document">Document</option>
+                          <option value="code">Code</option>
+                        </select>
+                      </div>
+                      <div className="col-span-1">
+                        <button
+                          type="button"
+                          onClick={() => removeLessonResource(index)}
+                          className="w-full bg-red-600 hover:bg-red-700 text-white px-2 py-2 rounded text-sm"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex space-x-4 mt-8">
+                <button
+                  onClick={() => {
+                    setShowAddLesson(false);
+                    setSelectedCourseForLesson(null);
+                    setNewLesson({
+                      title: '',
+                      description: '',
+                      videoUrl: '',
+                      duration: '',
+                      order: 1,
+                      isPreview: false,
+                      resources: [{ title: '', url: '', type: 'link' }]
+                    });
+                  }}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-semibold transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddLesson}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-200"
+                >
+                  Add Lesson
+                </button>
               </div>
             </div>
           </div>
