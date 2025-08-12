@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://learnhubk.netlify.app'],
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
 app.use(express.json());
@@ -74,6 +74,7 @@ import enrollmentRoutes from './routes/enrollments.js';
 import certificateRoutes from './routes/certificates.js';
 import chatRoutes from './routes/chat.js';
 import notificationRoutes from './routes/notifications.js';
+import contactRoutes from './routes/contacts.js';
 
 // Apply database requirement middleware to API routes that need DB
 app.use('/api/auth', requireDB, authRoutes);
@@ -85,6 +86,7 @@ app.use('/api/enrollments', requireDB, enrollmentRoutes);
 app.use('/api/certificates', requireDB, certificateRoutes);
 app.use('/api/chat', requireDB, chatRoutes);
 app.use('/api/notifications', requireDB, notificationRoutes);
+app.use('/api/contacts', contactRoutes); // Public route for contact form
 
 // Error handling middleware
 import { errorHandler } from './middleware/errorHandler.js';
