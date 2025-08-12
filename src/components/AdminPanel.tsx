@@ -17,7 +17,12 @@ import {
   Clock,
   Video,
   Image,
-  Link
+  Link,
+  Loader2,
+  Mail,
+  Phone,
+  Calendar,
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -95,6 +100,7 @@ const AdminPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
